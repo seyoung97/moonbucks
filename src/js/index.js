@@ -1,22 +1,21 @@
 // step1 요구사항 구현을 위한 전락
 // TODO 메뉴 추가
-// - [✅]메뉴의 이름을 입력 받고 확인 버튼을 누르면 메뉴가 추가된다.
-// - [✅]메뉴의 이름을 입력 받고 엔터키 입력으로 추가한다.
-// - [✅]추가되는 메뉴의 아래 마크업은 `<ul id="espresso-menu-list" class="mt-3 pl-0"></ul>` 안에 삽입해야 한다.
-// - [✅]총 메뉴 갯수를 count하여 상단에 보여준다.
-// - [✅]메뉴가 추가되고 나면, input은 빈 값으로 초기화한다.
-// - [✅]사용자 입력값이 빈 값이라면 추가되지 않는다.
+// - [✅] 메뉴의 이름을 입력 받고 확인 버튼을 누르면 메뉴가 추가된다.
+// - [✅] 메뉴의 이름을 입력 받고 엔터키 입력으로 추가한다.
+// - [✅] 추가되는 메뉴의 아래 마크업은 `<ul id="espresso-menu-list" class="mt-3 pl-0"></ul>` 안에 삽입해야 한다.
+// - [✅] 총 메뉴 갯수를 count하여 상단에 보여준다.
+// - [✅] 메뉴가 추가되고 나면, input은 빈 값으로 초기화한다.
+// - [✅] 사용자 입력값이 빈 값이라면 추가되지 않는다.
 
 // TODO 메뉴 수정
-// - 메뉴 수정 버튼 이벤트를 받고,
-// - 메뉴 수정 버튼을 눌렀을 떄 브라우저에서 제공하는 `prompt` 인터페이스를 띄워 수정할 수 있게한다.
-// - 모달창의 input에서 수정할 메뉴 이름을 받고, 확인버튼을 누르면 메뉴가 수정된다.
+// - [✅] 메뉴 수정 버튼을 눌렀을 떄 브라우저에서 제공하는 `prompt` 인터페이스를 띄워 수정할 수 있게한다.
+// - [✅] 모달창의 input에서 수정할 메뉴 이름을 받고, 확인버튼을 누르면 메뉴가 수정된다.
 
 // TODO 메뉴 삭제
-// - 메뉴 삭제 버튼 이벤트를 받고,
-// -  브라우저에서 제공하는 confirm 인터페이스를 활용해 확인용 모달창을 띄운다
-// - 모달창의 확인 버튼을 누르면 메뉴가 삭제된다.
-// - 모달창의 취소 버튼을 누르면 삭제되지 않는다.
+// - [] 메뉴 삭제 버튼 이벤트를 받고,
+// - [] 브라우저에서 제공하는 confirm 인터페이스를 활용해 확인용 모달창을 띄운다
+// - [] 모달창의 확인 버튼을 누르면 메뉴가 삭제된다.
+// - [] 모달창의 취소 버튼을 누르면 삭제되지 않는다.
 
 // util 함수
 // 반복되는 querySelector를 단순화하기 위해
@@ -24,6 +23,25 @@
 const $ = (selector) => document.querySelector(selector);
 
 function App() {
+  // 메뉴 수정을 위한 이벤트 위임
+  // 수정을 하기 위해서는 이벤트를 바인딩해줘야하는데
+  // index.html에는 바인딩한 element가 없다.
+  // 메뉴 추가를해야 생성 되는 동적인 element이기 때문이다.
+  // 이럴때 그 상위의 element에 이벤트를 위임할 수 있다.
+  $("#espresso-menu-list").addEventListener("click", (e) => {
+    console.log("target", e.target);
+    if (e.target.classList.contains("menu-edit-button")) {
+      // e.target을 사용해 클릭한 element가 뭔지 확인 가능
+      // prompt 기본 값에 기존의 메뉴 이름 넣기
+      const $menuName = e.target.closest("li").querySelector(".menu-name");
+      const updatedMenuName = prompt(
+        "메뉴명을 수정하세요",
+        $menuName.innerText
+      );
+      $menuName.innerText = updatedMenuName;
+    }
+  });
+
   // for태그가 자동으로 전송되는거 방지
   // 브라우저에서 form태그가 있으면 enter키 눌렀을때 자동으로 전송하게끔 함
   $("#espresso-menu-form").addEventListener("submit", (e) => {
