@@ -12,10 +12,11 @@
 // - [✅] 모달창의 input에서 수정할 메뉴 이름을 받고, 확인버튼을 누르면 메뉴가 수정된다.
 
 // TODO 메뉴 삭제
-// - [] 메뉴 삭제 버튼 이벤트를 받고,
-// - [] 브라우저에서 제공하는 confirm 인터페이스를 활용해 확인용 모달창을 띄운다
-// - [] 모달창의 확인 버튼을 누르면 메뉴가 삭제된다.
-// - [] 모달창의 취소 버튼을 누르면 삭제되지 않는다.
+// - [✅] 메뉴 삭제 버튼 이벤트를 받고,
+// - [✅] 브라우저에서 제공하는 confirm 인터페이스를 활용해 확인용 모달창을 띄운다
+// - [✅] 모달창의 확인 버튼을 누르면 메뉴가 삭제된다.
+// - [✅] 모달창의 취소 버튼을 누르면 삭제되지 않는다.
+// - [] 총 개수도 같이 줄어야 함.
 
 // util 함수
 // 반복되는 querySelector를 단순화하기 위해
@@ -23,13 +24,17 @@
 const $ = (selector) => document.querySelector(selector);
 
 function App() {
-  // 메뉴 수정을 위한 이벤트 위임
+  // 총 메뉴 개수 업데이트하는 함수 따로 작성해서 재사용
+  const updateMenuCount = () => {
+    const menuCount = $("#espresso-menu-list").querySelectorAll("li").length;
+    $(".menu-count").innerText = `총 ${menuCount} 개`;
+  };
+  // 메뉴 수정, 삭제를 위한 이벤트 위임
   // 수정을 하기 위해서는 이벤트를 바인딩해줘야하는데
   // index.html에는 바인딩한 element가 없다.
   // 메뉴 추가를해야 생성 되는 동적인 element이기 때문이다.
   // 이럴때 그 상위의 element에 이벤트를 위임할 수 있다.
   $("#espresso-menu-list").addEventListener("click", (e) => {
-    console.log("target", e.target);
     if (e.target.classList.contains("menu-edit-button")) {
       // e.target을 사용해 클릭한 element가 뭔지 확인 가능
       // prompt 기본 값에 기존의 메뉴 이름 넣기
@@ -39,6 +44,13 @@ function App() {
         $menuName.innerText
       );
       $menuName.innerText = updatedMenuName;
+    }
+
+    if (e.target.classList.contains("menu-remove-button")) {
+      if (confirm("정말 삭제하시겠습니까?")) {
+        e.target.closest("li").remove();
+        updateMenuCount();
+      }
     }
   });
 
@@ -91,8 +103,7 @@ function App() {
     // ul 안에 있는 li 태그들의 갯수를 세어 변수에 담는다.
     // 갯수를 담은 변수가 dom에 반영되도록 한다.
     // querySelectorAll 모든 query 가져옴
-    const menuCount = $("#espresso-menu-list").querySelectorAll("li").length;
-    $(".menu-count").innerText = `총 ${menuCount} 개`;
+    updateMenuCount();
 
     // input은 빈 값으로 초기화
     $("#espresso-menu-name").value = "";
