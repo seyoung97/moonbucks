@@ -20,8 +20,11 @@
 
 // step2 상태 관리로 메뉴 관리하기를 위한 전략
 // TODO localStorage Read & Write
-// - [ ] localStorage에 데이터를 저장한다. write
-// - [ ] localStorage에 있는 데이터를 읽어온다. read
+// - [✅ ] localStorage에 데이터를 저장한다. write
+//  - [✅ ] 메뉴를 추가할 때 저장
+//  - [✅ ] 메뉴를 수정할 때 저장
+//  - [✅ ] 메뉴를 삭제할 때 로컬스토리지에 저장된 것 삭제
+// - [✅ ] localStorage에 있는 데이터를 읽어온다. read
 
 // TODO 카테고리별 메뉴판 관리
 // - [ ] 에스프레소 메뉴판 관리
@@ -41,24 +44,45 @@
 
 const $ = (selector) => document.querySelector(selector);
 
+const store = {
+  setLocalStorage(menu) {
+    localStorage.setItem("menu", JSON.stringify(menu));
+    // JSON.stringify JSON 형식의 객체를 문자열로 바꿔준는 메서드
+  },
+  getLocalStorage() {
+    return JSON.parse(localStorage.getItem("menu"));
+    // 데이터가 문자열이기 때문에 제이슨 형식으로 바꿔야함
+  },
+};
+
 function App() {
+  // 상태는 변할 수 있는 데이터를 의미
+  // 이 앱에 있는 상태: 메뉴명
+  this.menu = [];
+  // 상태값을 선언후 빈 배열로 초기화
+
+  // 초기 화면
+  this.init = () => {
+    if (
+      Array.isArray(store.getLocalStorage()) &&
+      store.getLocalStorage().length > 0
+    ) {
+      this.menu = store.getLocalStorage();
+    }
+    renderMenuName();
+  };
+
   const updateMenuCount = () => {
     const menuCount = $("#espresso-menu-list").querySelectorAll("li").length;
     $(".menu-count").innerText = `총 ${menuCount} 개`;
   };
 
-  const addMenuName = () => {
-    if ($("#espresso-menu-name").value === "") {
-      alert("값을 입력해주세요.");
-      return;
-    }
-
-    const espressoMenuName = $("#espresso-menu-name").value;
-
-    const menuItemTemplate = (espressoMenuName) => {
-      return `
-      <li class="menu-list-item d-flex items-center py-2">
-      <span class="w-100 pl-2 menu-name">${espressoMenuName}</span>
+  const renderMenuName = () => {
+    const template = this.menu
+      .map((item, index) => {
+        return `
+      <li data-menu-id="${index}" class="menu-list-item d-flex items-center py-2">
+      <span class="w-100 pl-2 menu-name">${item.name}</span>
       <button
         type="button"
         class="bg-gray-50 text-gray-500 text-sm mr-1 menu-edit-button"
@@ -72,26 +96,40 @@ function App() {
         삭제
       </button>
     </li>`;
-    };
+      })
+      .join("");
 
-    $("#espresso-menu-list").insertAdjacentHTML(
-      "beforeend",
-      menuItemTemplate(espressoMenuName)
-    );
-
+    $("#espresso-menu-list").innerHTML = template;
     updateMenuCount();
+  };
 
+  const addMenuName = () => {
+    if ($("#espresso-menu-name").value === "") {
+      alert("값을 입력해주세요.");
+      return;
+    }
+
+    const espressoMenuName = $("#espresso-menu-name").value;
+    this.menu.push({ name: espressoMenuName });
+    store.setLocalStorage(this.menu);
+    renderMenuName();
     $("#espresso-menu-name").value = "";
   };
 
   const updateMenuName = (e) => {
+    const menuId = e.target.closest("li").dataset.menuId;
     const $menuName = e.target.closest("li").querySelector(".menu-name");
     const updatedMenuName = prompt("메뉴명을 수정하세요", $menuName.innerText);
+    this.menu[menuId].name = updatedMenuName;
+    store.setLocalStorage(menu);
     $menuName.innerText = updatedMenuName;
   };
 
   const removeMenuName = (e) => {
     if (confirm("정말 삭제하시겠습니까?")) {
+      const menuId = e.target.closest("li").dataset.menuId;
+      this.menu.splice(menuId, 1);
+      store.setLocalStorage(this.menu);
       e.target.closest("li").remove();
       updateMenuCount();
     }
@@ -120,4 +158,13 @@ function App() {
   });
 }
 
-App();
+const app = new App();
+// 맨 처음에 페이지를 접근하면 app 이라는 객체가 생성
+
+app.init(); // app 객체의 init을 실행
+
+// app이 인스턴스로 만든다는 의미
+// 함수를 하나 선언했다면 그 함수는 하나만 존재
+// 인스턴스로 만든다는 거는 그 함수를 모델로 새로운 객체들이 여러개 만들어질 수 있고 각각의 상태를 가질 수 있음
+// 예를 들어 채팅창이 여러개, 채팅창 하나 하나가 각각의 객체임
+// 채팅방이라는 플랫폼은 같지만 각기 다른 내용의 채팅이 됨
