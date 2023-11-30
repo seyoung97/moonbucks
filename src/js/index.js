@@ -27,15 +27,15 @@
 // - [✅ ] localStorage에 있는 데이터를 읽어온다. read
 
 // TODO 카테고리별 메뉴판 관리
-// - [ ] 에스프레소 메뉴판 관리
-// - [ ] 프라푸치노 메뉴판 관리
-// - [ ] 블렌디드 메뉴판 관리
-// - [ ] 티바나 메뉴판 관리
-// - [ ] 디저트 메뉴판 관리
+// - [✅ ] 에스프레소 메뉴판 관리
+// - [✅ ] 프라푸치노 메뉴판 관리
+// - [✅ ] 블렌디드 메뉴판 관리
+// - [✅ ] 티바나 메뉴판 관리
+// - [✅ ] 디저트 메뉴판 관리
 
 // TODO 페이지 접근시 최초 데이터 Read & Rendering
-// - [ ] 페이지가 최초로 로딩될 때는 localStorage에 저장된 에스프레소 메뉴를 읽어 온다.
-// - [ ] 에스프레소 메뉴를 페이지에 그려준다.
+// - [✅ ] 페이지가 최초로 로딩될 때는 localStorage에 저장된 에스프레소 메뉴를 읽어 온다.
+// - [✅ ] 에스프레소 메뉴를 페이지에 그려준다.
 
 // TODO 품절 상태 관리
 // - [ ] 품절 버튼을 UI에 추가한다.
@@ -58,27 +58,31 @@ const store = {
 function App() {
   // 상태는 변할 수 있는 데이터를 의미
   // 이 앱에 있는 상태: 메뉴명
-  this.menu = [];
+  this.menu = {
+    espresso: [],
+    frappuccino: [],
+    blended: [],
+    teavana: [],
+    desert: [],
+  };
   // 상태값을 선언후 빈 배열로 초기화
+  this.currentCategory = "espresso";
 
   // 초기 화면
   this.init = () => {
-    if (
-      Array.isArray(store.getLocalStorage()) &&
-      store.getLocalStorage().length > 0
-    ) {
+    if (store.getLocalStorage()) {
       this.menu = store.getLocalStorage();
     }
     renderMenuName();
   };
 
   const updateMenuCount = () => {
-    const menuCount = $("#espresso-menu-list").querySelectorAll("li").length;
+    const menuCount = $("#menu-list").querySelectorAll("li").length;
     $(".menu-count").innerText = `총 ${menuCount} 개`;
   };
 
   const renderMenuName = () => {
-    const template = this.menu
+    const template = this.menu[this.currentCategory]
       .map((item, index) => {
         return `
       <li data-menu-id="${index}" class="menu-list-item d-flex items-center py-2">
@@ -99,43 +103,43 @@ function App() {
       })
       .join("");
 
-    $("#espresso-menu-list").innerHTML = template;
+    $("#menu-list").innerHTML = template;
     updateMenuCount();
   };
 
   const addMenuName = () => {
-    if ($("#espresso-menu-name").value === "") {
+    if ($("#menu-name").value === "") {
       alert("값을 입력해주세요.");
       return;
     }
 
-    const espressoMenuName = $("#espresso-menu-name").value;
-    this.menu.push({ name: espressoMenuName });
+    const espressoMenuName = $("#menu-name").value;
+    this.menu[this.currentCategory].push({ name: espressoMenuName });
     store.setLocalStorage(this.menu);
     renderMenuName();
-    $("#espresso-menu-name").value = "";
+    $("#menu-name").value = "";
   };
 
   const updateMenuName = (e) => {
     const menuId = e.target.closest("li").dataset.menuId;
     const $menuName = e.target.closest("li").querySelector(".menu-name");
     const updatedMenuName = prompt("메뉴명을 수정하세요", $menuName.innerText);
-    this.menu[menuId].name = updatedMenuName;
-    store.setLocalStorage(menu);
+    this.menu[this.currentCategory][menuId].name = updatedMenuName;
+    store.setLocalStorage(this.menu);
     $menuName.innerText = updatedMenuName;
   };
 
   const removeMenuName = (e) => {
     if (confirm("정말 삭제하시겠습니까?")) {
       const menuId = e.target.closest("li").dataset.menuId;
-      this.menu.splice(menuId, 1);
+      this.menu[this.currentCategory].splice(menuId, 1);
       store.setLocalStorage(this.menu);
       e.target.closest("li").remove();
       updateMenuCount();
     }
   };
 
-  $("#espresso-menu-list").addEventListener("click", (e) => {
+  $("#menu-list").addEventListener("click", (e) => {
     if (e.target.classList.contains("menu-edit-button")) {
       updateMenuName(e);
     }
@@ -145,15 +149,26 @@ function App() {
     }
   });
 
-  $("#espresso-menu-form").addEventListener("submit", (e) => {
+  $("#menu-form").addEventListener("submit", (e) => {
     e.preventDefault();
   });
 
-  $("#espresso-menu-submit-button").addEventListener("click", addMenuName);
+  $("#menu-submit-button").addEventListener("click", addMenuName);
 
-  $("#espresso-menu-name").addEventListener("keypress", (e) => {
+  $("#menu-name").addEventListener("keypress", (e) => {
     if (e.key === "Enter") {
       addMenuName();
+    }
+  });
+
+  $("nav").addEventListener("click", (e) => {
+    const isCategoryButton = e.target.classList.contains("cafe-category-name");
+    if (isCategoryButton) {
+      const categoryName = e.target.dataset.categoryName;
+      this.currentCategory = categoryName;
+      console.log("categoryName", categoryName);
+      $("#category-title").innerText = `${e.target.innerText} 메뉴 관리`;
+      renderMenuName();
     }
   });
 }
@@ -168,3 +183,8 @@ app.init(); // app 객체의 init을 실행
 // 인스턴스로 만든다는 거는 그 함수를 모델로 새로운 객체들이 여러개 만들어질 수 있고 각각의 상태를 가질 수 있음
 // 예를 들어 채팅창이 여러개, 채팅창 하나 하나가 각각의 객체임
 // 채팅방이라는 플랫폼은 같지만 각기 다른 내용의 채팅이 됨
+
+// 상태 관리의 중요성
+// 상태 관리란 변화하는 데이터를 잘 반영하는 것
+// 사용자와 인터랙션이 가능한 웹애플리케이션을 만들기 위해서
+// 기본적으로 이루어져야하는 것이 상태관리 이기 때문
