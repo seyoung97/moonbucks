@@ -38,9 +38,11 @@
 // - [✅ ] 에스프레소 메뉴를 페이지에 그려준다.
 
 // TODO 품절 상태 관리
-// - [ ] 품절 버튼을 UI에 추가한다.
-// - [ ] 품절 버튼을 클릭하면 localStorage에 상태값이 저장된다.
-// - [ ] 품절 버튼을 클릭하면 sold-out class를 추가하여 UI 상태를 변경한다.
+// - [✅ ] 품절 버튼을 UI에 추가한다.
+// - [✅ ] 품절 버튼을 클릭하면 localStorage에 상태값이 저장된다.
+// - [✅ ] 품절 버튼을 클릭하면 sold-out class를 추가하여 UI 상태를 변경한다.
+// - [✅ ] localStorage에 있는 데이터에도 품절 상태임을 저장한다.
+// - [✅ ] toggle로 작동하게 한다
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -85,8 +87,16 @@ function App() {
     const template = this.menu[this.currentCategory]
       .map((item, index) => {
         return `
-      <li data-menu-id="${index}" class="menu-list-item d-flex items-center py-2">
+      <li data-menu-id="${index}" class="${
+          item.soldOut ? "sold-out" : ""
+        } menu-list-item d-flex items-center py-2">
       <span class="w-100 pl-2 menu-name">${item.name}</span>
+      <button
+        type="button"
+        class="bg-gray-50 text-gray-500 text-sm mr-1 menu-sold-out-button"
+      >
+        품절
+      </button> 
       <button
         type="button"
         class="bg-gray-50 text-gray-500 text-sm mr-1 menu-edit-button"
@@ -139,13 +149,28 @@ function App() {
     }
   };
 
+  const soldOutMenu = (e) => {
+    const menuId = e.target.closest("li").dataset.menuId;
+    this.menu[this.currentCategory][menuId].soldOut =
+      !this.menu[this.currentCategory][menuId].soldOut; // soldOut 속성 추가하고 boolean 값
+    store.setLocalStorage(this.menu);
+    renderMenuName();
+  };
+
   $("#menu-list").addEventListener("click", (e) => {
     if (e.target.classList.contains("menu-edit-button")) {
       updateMenuName(e);
+      return;
     }
 
     if (e.target.classList.contains("menu-remove-button")) {
       removeMenuName(e);
+      return;
+    }
+
+    if (e.target.classList.contains("menu-sold-out-button")) {
+      soldOutMenu(e);
+      return;
     }
   });
 
